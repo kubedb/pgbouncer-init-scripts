@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
 export PGPASSWORD="qrDy;GnX4QsKQ0UL"
 
@@ -9,6 +9,9 @@ PG_DB="${PG_DB:-postgres}"
 CONNECT_TIMEOUT="${CONNECT_TIMEOUT:-60}"
 RETRY_INTERVAL="${RETRY_INTERVAL:-2}"
 
+log() {
+  printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
+}
 
 SQL=$(cat <<EOF
 CREATE TABLE IF NOT EXISTS "${TABLE_NAME}" (
@@ -20,7 +23,7 @@ EOF
 )
 
 log "creating table ${TABLE_NAME} (if not exists)"
-iif psql --host=localhost --port=5432 --username="$PG_USER" "$PG_DB" -v ON_ERROR_STOP=1 --no-align -q -c "$SQL"; then
+if psql --host=localhost --port=5432 --username="$PG_USER" "$PG_DB" -v ON_ERROR_STOP=1 --no-align -q -c "$SQL"; then
   log "table ${TABLE_NAME} created or already exists"
   exit 0
 else
