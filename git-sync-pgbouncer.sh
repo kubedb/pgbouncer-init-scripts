@@ -10,48 +10,6 @@ RETRY_INTERVAL="${RETRY_INTERVAL:-2}"
 
 log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
 
-install_psql() {
-  if command -v psql >/dev/null 2>&1; then
-    return 0
-  fi
-  log "psql not found, attempting to install client..."
-
-  # helper to run package manager with sudo if needed
-  run_install() {
-    cmd="$1"
-    shift
-    if [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1; then
-      sudo "$cmd" "$@"
-    else
-      "$cmd" "$@"
-    fi
-  }
-
-  if command -v apt-get >/dev/null 2>&1; then
-    run_install apt-get update -y
-    run_install apt-get install -y postgresql-client || run_install apt-get install -y postgresql
-  elif command -v apk >/dev/null 2>&1; then
-    run_install apk add --no-cache postgresql-client
-  elif command -v dnf >/dev/null 2>&1; then
-    run_install dnf install -y postgresql
-  elif command -v yum >/dev/null 2>&1; then
-    run_install yum install -y postgresql
-  elif command -v zypper >/dev/null 2>&1; then
-    run_install zypper --non-interactive install postgresql
-  else
-    log "no known package manager found, cannot install psql"
-    return 1
-  fi
-
-  if command -v psql >/dev/null 2>&1; then
-    log "psql installed"
-    return 0
-  else
-    log "psql installation attempted but psql still missing"
-    return 1
-  fi
-}
-
 read_password_file() {
   if [ ! -f "$PASSWORD_FILE" ]; then
     log "password file not found: $PASSWORD_FILE"
@@ -89,9 +47,9 @@ if ! [[ "$TABLE_NAME" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
   exit 2
 fi
 
-log "ensuring psql is available..."
-if ! install_psql; then
-  log "failed to ensure psql availability"
+# Ensure psql is present (do not attempt installation)
+if ! command -v psql >/dev/null 2>&1; then
+  log "psql not found in PATH. Please install psql client and re-run the script."
   exit 3
 fi
 
