@@ -1,0 +1,95 @@
+apiVersion: v1
+data:
+  password: cXJEeTtHblg0UXNLUTBVTA==
+  username: cG9zdGdyZXM=
+kind: Secret
+metadata:
+  name: quick-postgres-user-auth
+  namespace: demo
+type: kubernetes.io/basic-auth
+---
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: quick-postgres
+  namespace: demo
+spec:
+  authSecret:
+    apiGroup: ""
+    kind: Secret
+    name: quick-postgres-user-auth
+  clientAuthMode: md5
+  deletionPolicy: WipeOut
+  podTemplate:
+    spec:
+      containers:
+      - name: postgres
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 70
+          runAsNonRoot: true
+          runAsUser: 70
+          seccompProfile:
+            type: RuntimeDefault
+      - name: pg-coordinator
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 70
+          runAsNonRoot: true
+          runAsUser: 70
+          seccompProfile:
+            type: RuntimeDefault
+      initContainers:
+      - name: postgres-init-container
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 70
+          runAsNonRoot: true
+          runAsUser: 70
+          seccompProfile:
+            type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
+      securityContext:
+        fsGroup: 70
+        runAsGroup: 70
+        runAsUser: 70
+      serviceAccountName: quick-postgres
+  replicas: 1
+  sslMode: disable
+  standbyMode: Hot
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  storageType: Durable
+  version: "13.13"
