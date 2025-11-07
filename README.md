@@ -4,7 +4,7 @@ Quick verification steps:
 
 3. Verify table exists (use the same password)
    - export PGPASSWORD="qrDy;GnX4QsKQ0UL"
-   - psql -U postgres -d postgres -h localhost -p <db container port>
+   - psql -U postgres -d postgres -h localhost -p \<db container port\>
    - \dt
 
 Expected output examples:
