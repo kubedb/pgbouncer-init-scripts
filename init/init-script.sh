@@ -23,7 +23,7 @@ EOF
 )
 
 log "creating table ${TABLE_NAME} (if not exists)"
-if psql --host=localhost --port=5432 --username="$PG_USER" "$PG_DB" -v ON_ERROR_STOP=1 --no-align -q -c "$SQL"; then
+if psql --host=localhost --port=9999 --username="$PG_USER" "$PG_DB" -v ON_ERROR_STOP=1 --no-align -q -c "$SQL"; then
   log "table ${TABLE_NAME} created or already exists"
   exit 0
 else
